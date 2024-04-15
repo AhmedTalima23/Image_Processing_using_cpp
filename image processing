@@ -581,7 +581,63 @@ void addFrame(Image& image, int frameSize, const string& frameColor, const strin
 
 
 
+void black_white(Image& image) {
+    for (int i = 0; i < image.width; ++i) {
+        for (int j = 0; j < image.height; ++j) {
+            unsigned int avg = 0; // Initialize average value
 
+            for (int k = 0; k < 3; ++k) {
+                avg += image(i, j, k); // Accumulate pixel values
+            }
+
+            avg /= 3; // Calculate average
+
+            // Set all channels to the average value
+            if (avg < 128) {
+                image(i, j, 0) = 0;
+                image(i, j, 1) = 0;
+                image(i, j, 2) = 0;
+            }
+            else {
+                image(i, j, 0) = 255;
+                image(i, j, 1) = 255;
+                image(i, j, 2) = 255;
+            }
+        }
+    }
+}
+
+
+void Edge_Detection(Image& Image1, Image& Image2) {
+
+    // Prewitt operator kernels
+    int prewittX[3][3] = {{-1, 0, 1}, {-1, 0, 1}, {-1, 0, 1}};
+    int prewittY[3][3] = {{-1, -1, -1}, {0, 0, 0}, {1, 1, 1}};
+
+    // Iterate over each pixel
+    for (int y = 1; y < Image1.height - 1; y++) {
+        for (int x = 1; x < Image1.width - 1; x++) {
+            for (int z = 0; z < Image1.channels; z++) {
+                // Calculate gradient using Prewitt operator
+                int gradientX = 0, gradientY = 0;
+                for (int i = -1; i <= 1; i++) {
+                    for (int j = -1; j <= 1; j++) {
+                        int pixelX = x + j;
+                        int pixelY = y + i;
+                        int value = Image1.getPixel(pixelX, pixelY, z);
+                        gradientX += value * prewittX[i + 1][j + 1];
+                        gradientY += value * prewittY[i + 1][j + 1];
+                    }
+                }
+                // Calculate magnitude of the gradient
+                int mag = std::sqrt(gradientX * gradientX + gradientY * gradientY);
+                // Invert colors (black to white, white to black)
+                mag = 255 - mag;
+                Image2.setPixel(x, y, z, mag);
+            }
+        }
+    }
+}
 
 
 int main() {
@@ -599,7 +655,8 @@ int main() {
         cout << "9. Merge filter" << endl;
         cout << "10. Rotate Image filter" << endl;
         cout << "11. Add frame filter" << endl;
-        cout << "12. EXIT" << endl;
+        cout << "12. Edge Detection filter" << endl;
+        cout << "13. EXIT" << endl;
         cin >> choice;
         switch (choice) {
             case 1:
@@ -690,7 +747,36 @@ int main() {
                 return 0;
             }
                     break;
-            case 12:
+
+            case 12:{
+
+                string filename;
+                cout << "Enter the filename of the image: ";
+                cin >> filename;
+                Image Image1(filename);
+                // Convert the image to black and white
+                black_white(Image1);
+
+                // Create an output image with the same dimensions as the input image
+                Image Image2(Image1.width, Image1.height);
+
+                // Perform Sobel edge detection
+                Edge_Detection(Image1, Image2);
+
+                string filename2;
+                cout << "Enter the filename of the new image: ";
+                cin >> filename2;
+                Image2.saveImage(filename2);
+
+                cout << "Edge detection complete. New image saved as: " << filename2 << endl;
+
+                return 0;
+            }
+
+
+
+            
+            case 13:
                 cout << "Exiting..." << endl;
                 return 0;
             
