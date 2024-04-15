@@ -599,7 +599,7 @@ int main() {
         cout << "9. Merge filter" << endl;
         cout << "10. Rotate Image filter" << endl;
         cout << "11. Add frame filter" << endl;
-        cout << "11. EXIT" << endl;
+        cout << "12. EXIT" << endl;
         cin >> choice;
         switch (choice) {
             case 1:
